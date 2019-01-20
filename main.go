@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/Filip/diplomovka_UNITY/unity_verificator/actions"
+	"github.com/Filip/unity_verificator/actions"
 )
 
 // main is the starting point for your Buffalo application.

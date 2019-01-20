@@ -1,7 +1,7 @@
 package grifts
 
 import (
-	"github.com/Filip/diplomovka_UNITY/unity_verificator/actions"
+	"github.com/Filip/unity_verificator/actions"
 	"github.com/gobuffalo/buffalo"
 )
 
