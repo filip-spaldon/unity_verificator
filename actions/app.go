@@ -7,8 +7,6 @@ import (
 	paramlogger "github.com/gobuffalo/mw-paramlogger"
 	"github.com/unrolled/secure"
 
-	"github.com/Filip/unity_verificator/models"
-	"github.com/gobuffalo/buffalo-pop/pop/popmw"
 	csrf "github.com/gobuffalo/mw-csrf"
 	i18n "github.com/gobuffalo/mw-i18n"
 	"github.com/gobuffalo/packr"
@@ -45,8 +43,8 @@ func App() *buffalo.App {
 		app.Use(forceSSL())
 		app.Use(paramlogger.ParameterLogger)
 		app.Use(csrf.New)
-		app.Use(popmw.Transaction(models.DB))
-		app.Use(translations())
+		//app.Use(popmw.Transaction(models.DB))
+		//app.Use(translations())
 
 		app.GET("/", IndexHandler)
 		app.GET("/domov", HomeHandler)
@@ -54,6 +52,9 @@ func App() *buffalo.App {
 		app.GET("/progres", ProgressHandler)
 		app.GET("/linky", LinksxHandler)
 		app.GET("/aplikacia", ResultHandler)
+		backend := app.Group("/backend/")
+		api := backend.Group("/api/")
+		api.POST("/run_code", runCodeAPIHandler)
 
 		app.Use(func(next buffalo.Handler) buffalo.Handler {
 			return func(c buffalo.Context) error {

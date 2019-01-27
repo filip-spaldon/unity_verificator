@@ -1,10 +1,18 @@
 import React from 'react';
 
 export default function DescriptionPageLayout() {
+  let pStyle = {
+    textAlign: 'justify',
+    fontStyle: 'italic',
+    margin: '50px 50px 50px'
+  };
+  let h2Style = {
+    textAlign: 'center'
+  };
   return (
     <div className="description">
-      <h2>Čo to je UNITY?</h2>
-      <p>
+      <h2 style={h2Style}>Čo to je UNITY?</h2>
+      <p style={pStyle}>
         UNITY vychádza z knihy Parallel Program Design - A Foundation, v ktorej
         bol UNITY popísaný a navrhnutý autormi K. Mali Chandy a Jayadev Misra z
         Univerzity of Texax. Je to teoretický jazyk, ktorý sa zameriava na to
