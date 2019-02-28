@@ -52,6 +52,7 @@ func App() *buffalo.App {
 		app.GET("/progres", ProgressHandler)
 		app.GET("/linky", LinksxHandler)
 		app.GET("/aplikacia", ResultHandler)
+		app.GET("/form", FormHandler)
 		backend := app.Group("/backend/")
 		api := backend.Group("/api/")
 		api.POST("/run_code", runCodeAPIHandler)

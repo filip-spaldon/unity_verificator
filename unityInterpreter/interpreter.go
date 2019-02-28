@@ -1,6 +1,7 @@
 package unityInterpreter
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/asaskevich/govalidator"
@@ -73,11 +74,21 @@ func (u *Unity) Parse() string {
 			u.Program = u.Token
 		} else if u.Token == "declare" {
 			u.Scan()
+			pom := ""
 			for u.Token != "always" && u.Token != "initially" {
-				if u.Kind == WORD {
-					u.Variables[u.Token] = nil
-				}
+				token := strings.TrimSpace(u.Token)
+				pom += token
 				u.Scan()
+			}
+			for _, val := range strings.Split(pom, ",") {
+				left := strings.Split(val, ":")[0]
+				right := strings.Split(val, ":")[1]
+				if stringInSlice(right, BULDINWORDS) {
+					u.Variables[left] = right
+				} else {
+					return "CHYBA, declare section"
+				}
+
 			}
 		} else if u.Token == "always" {
 			u.Scan()
@@ -105,9 +116,15 @@ func (u *Unity) Parse() string {
 			}
 			left := strings.Split(pom, ":")[0]
 			right := strings.Split(pom, ":")[1]
+			if len(strings.Split(left, ",")) != len(strings.Split(right, ",")) {
+				return "CHYBA, initially section"
+			}
 			for index, val := range strings.Split(left, ",") {
 				if _, isset := u.Variables[val]; isset {
-					u.Variables[val] = string(strings.Split(right, ",")[index])
+					value := string(strings.Split(right, ",")[index])
+					if a, err := strconv.Atoi(value); err == nil && u.Variables[val] == "integer" {
+						u.Variables[val] = a
+					}
 				} else {
 					return "CHYBA, initially section"
 				}
@@ -120,16 +137,3 @@ func (u *Unity) Parse() string {
 	}
 	return "Telo programu je prázdne"
 }
-
-// func timeTrack(start time.Time, name string) {
-// 	elapsed := time.Since(start)
-// 	log.Printf("%s took %fs", name, elapsed.Seconds())
-// }
-
-// func main() {
-// 	defer timeTrack(time.Now(), "Logo time")
-// 	logo := Logo{input: "opakuj 4 [dopredu 100 vpravo 90]", Index: 0, Kind: 5}
-// 	logo.Next()
-// 	logo.scan()
-// 	logo.interpret()
-// }

@@ -27,3 +27,7 @@ func LinksxHandler(c buffalo.Context) error {
 func ResultHandler(c buffalo.Context) error {
 	return c.Render(200, r.HTML("result.html"))
 }
+
+func FormHandler(c buffalo.Context) error {
+	return c.Render(200, r.HTML("form.html"))
+}
