@@ -1,32 +1,38 @@
-import React, { useState, useEffect } from 'react';
-import MonacoEditor from 'react-monaco-editor';
-import { options, languageDef, configuration } from './codeEditor-config.js';
+import React, { useState } from "react";
+import MonacoEditor from "react-monaco-editor";
+import { options, languageDef, configuration } from "./codeEditor-config.js";
 
 export default function CodeEditorComponent() {
-  const [code, setCode] = useState(
-    `program         GCD
-    declare     x: integer, 
-                y: integer
-    always      decx, decy = x > y, y > x
-    initially   x, y : 10, 5
-    assign      x := x - y if decx
-        []      y := y - x if decy
-end`
-  );
+  const GCD = `program       GCD
+  declare     x: integer, 
+              y: integer
+  always      decx, decy := x > y, y > x
+  initially   x, y : 10, 5
+  assign      x := x - y if decx
+      []      y := y - x if decy
+end`;
+  const BubbleSort = `program       BubbleSort
+  declare     N: integer, 
+              a: array [0..N] of integer
+  initially   N: 10 []
+              <<|| k: 0 <= k < N :: a[k] = rand() >>
+  assign      <<[] i: 0 <= i < N - 1 :: a[i], a[i + 1] = a[i + 1], a[i] if a[i] > a[i + 1] >>
+end`;
+  const [code, setCode] = useState("");
 
   const runCode = () => {
     const formData = new FormData();
-    formData.append('code', code);
+    formData.append("code", code);
     formData.append(
-      'authenticity_token',
+      "authenticity_token",
       document.querySelector('[name="csrf-token"]').content
     );
-    fetch('/backend/api/run_code/', {
-      method: 'POST',
-      credentials: 'same-origin',
-      mode: 'same-origin',
+    fetch("/backend/api/run_code/", {
+      method: "POST",
+      credentials: "same-origin",
+      mode: "same-origin",
       headers: {
-        Accept: 'application/json'
+        Accept: "application/json"
       },
       body: formData
     })
@@ -41,22 +47,37 @@ end`
   };
 
   const editorDidMount = (editor, monaco) => {
-    if (!monaco.languages.getLanguages().some(({ id }) => id === 'unity')) {
-      monaco.languages.register({ id: 'unity' });
-      monaco.languages.setMonarchTokensProvider('unity', languageDef);
-      monaco.languages.setLanguageConfiguration('unity', configuration);
+    if (!monaco.languages.getLanguages().some(({ id }) => id === "unity")) {
+      monaco.languages.register({ id: "unity" });
+      monaco.languages.setMonarchTokensProvider("unity", languageDef);
+      monaco.languages.setLanguageConfiguration("unity", configuration);
     }
     editor.focus();
   };
 
   return (
     <div>
-      <span className="result_btn" href="#" onClick={runCode}>
-        Run
-      </span>
-      <span className="result_btn" href="#" onClick={() => setCode('')}>
-        Clear
-      </span>
+      <div className="row">
+        <h3>Examples: </h3>
+        <span className="result_btn" href="#" onClick={() => setCode(GCD)}>
+          GCD
+        </span>
+        <span
+          className="result_btn"
+          href="#"
+          onClick={() => setCode(BubbleSort)}
+        >
+          Bubble Sort
+        </span>
+      </div>
+      <div className="row">
+        <span className="result_btn" href="#" onClick={runCode}>
+          Run
+        </span>
+        <span className="result_btn" href="#" onClick={() => setCode("")}>
+          Clear
+        </span>
+      </div>
       <MonacoEditor
         width="100%"
         height="600"
