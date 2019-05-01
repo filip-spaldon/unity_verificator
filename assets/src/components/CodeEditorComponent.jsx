@@ -7,16 +7,16 @@ export default function CodeEditorComponent() {
   declare     x: integer, 
               y: integer
   always      decx, decy := x > y, y > x
-  initially   x, y : 10, 5
+  initially   x, y : 60, 48
   assign      x := x - y if decx
       []      y := y - x if decy
 end`;
   const BubbleSort = `program       BubbleSort
   declare     N: integer, 
               a: array [0..N] of integer
-  initially   N: 10 []
-              <<|| k: 0 <= k < N :: a[k] = rand() >>
-  assign      <<[] i: 0 <= i < N - 1 :: a[i], a[i + 1] = a[i + 1], a[i] if a[i] > a[i + 1] >>
+  initially   N: 5 []
+              <|| k: 0 <= k < N :: a[k] = rand() >
+  assign      <[] i: 0 <= i < N - 1 :: a[i], a[i + 1] = a[i + 1], a[i] if a[i] > a[i + 1] >
 end`;
   const [code, setCode] = useState("");
 
@@ -41,7 +41,11 @@ end`;
         else return response.json();
       })
       .then(data => {
-        console.log(JSON.parse(data));
+        data = JSON.parse(data);
+        console.log(data);
+        if (window.confirm(data.output)) {
+          window.location.href = "/out/program.smv";
+        }
         return true;
       });
   };
@@ -67,15 +71,16 @@ end`;
           href="#"
           onClick={() => setCode(BubbleSort)}
         >
-          Bubble Sort
+          BUBBLE SORT
         </span>
       </div>
+      <br />
       <div className="row">
         <span className="result_btn" href="#" onClick={runCode}>
-          Run
+          RUN
         </span>
         <span className="result_btn" href="#" onClick={() => setCode("")}>
-          Clear
+          CLEAR
         </span>
       </div>
       <MonacoEditor

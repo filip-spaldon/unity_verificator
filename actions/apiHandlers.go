@@ -2,6 +2,7 @@ package actions
 
 import (
 	"encoding/json"
+	"os/exec"
 
 	"github.com/filip/unity_verificator/unityInterpreter"
 	"github.com/gobuffalo/buffalo"
@@ -26,6 +27,7 @@ type Result struct {
 	Body        map[string]map[string]interface{} `json:"body"`
 	ProgramName string                            `json:"Program name"`
 	Tree        Tree                              `json:"tree"`
+	Output      string                            `json:"output"`
 }
 
 func jsonResponse(obj Result) (int, render.Renderer) {
@@ -43,9 +45,16 @@ func runCodeAPIHandler(c buffalo.Context) error {
 	unity.Next()
 	unity.Scan()
 	text, ok := unity.Parse()
+	unityInterpreter.MakePromela(&unity.Tree, &unity)
 	if !ok {
 		data := Result{Text: text}
 		return c.Render(jsonResponse(data))
+	}
+	cmd := exec.Command("/bin/sh", "-c", "bin/s2n public/out/program.pml -o public/out/program.smv ")
+	output := "ERROR"
+	if _, err := cmd.CombinedOutput(); err == nil {
+		output = "Program bol úspešne vygenerovaný!!!\n"
+		output += "Prajete si stiahnuť sml súbor?"
 	}
 	data := Result{
 		Text:        text,
@@ -61,6 +70,7 @@ func runCodeAPIHandler(c buffalo.Context) error {
 			Section:   unity.Tree.Section,
 			Value:     unity.Tree.Value,
 		},
+		Output: output,
 	}
 	return c.Render(jsonResponse(data))
 }

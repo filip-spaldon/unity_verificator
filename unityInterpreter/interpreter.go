@@ -2,10 +2,12 @@ package unityInterpreter
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
 	"github.com/asaskevich/govalidator"
+	"gopkg.in/Knetic/govaluate.v3"
 )
 
 // inicialization vars
@@ -29,21 +31,6 @@ type Unity struct {
 	Variables map[string]interface{}
 	Body      map[string]map[string]interface{}
 	Tree      Node
-}
-
-func (u *Unity) Check(kind int) string {
-	switch kind {
-	case 0:
-		return "NOTHING"
-	case 1:
-		return "NUMBER"
-	case 2:
-		return "WORD"
-	case 3:
-		return "SYMBOL"
-	default:
-		return ""
-	}
 }
 
 func (u *Unity) Next() {
@@ -157,66 +144,51 @@ func (u *Unity) Parse() (string, bool) {
 				pom += u.Token + " "
 				u.Scan()
 			}
-			if len(strings.Split(pom, "[]")) <= 1 {
-				left := strings.TrimSpace(strings.Split(pom, ":")[0])
-				right := strings.Split(pom, ":")[1]
-				right = right[1 : len(right)-1]
-				if len(strings.Split(left, ",")) != len(strings.Split(right, ",")) {
-					return "CHYBA - initially section", false
-				}
-				for index, val := range strings.Split(left, ",") {
-					val = strings.TrimSpace(val)
+			for _, val := range strings.Split(pom, " [] ") {
+				if strings.Contains(val, "<[]") || strings.Contains(val, "<||") {
 					node := &Node{
 						Statement: "=",
 						Nodes:     []*Node{},
 					}
-					if _, isset := u.Variables[val]; isset {
-						value := strings.TrimSpace(string(strings.Split(right, ",")[index]))
-						if a, err := strconv.Atoi(value); err == nil && u.Variables[val] == "integer" {
-							u.Variables[val] = a
-							u.Body["initially"][val] = a
-							node.Nodes = append(node.Nodes, &Node{Name: val})
-							node.Nodes = append(node.Nodes, &Node{Value: a})
-						}
-					} else {
-						return "CHYBA - initially section", false
+					val = strings.TrimSpace(val)
+					val = val[strings.Index(val, "<")+4 : len(val)-1]
+					i, k, N, oper1, oper2 := forParserLeft(val, u.Variables)
+					arrays, vals := forParserRightInitially(val, u.Variables, i, k, N, oper1, oper2)
+					for index, val := range vals {
+						u.Variables[val] = arrays[index]
+						u.Body["initially"][val] = arrays[index]
+						node.Nodes = append(node.Nodes, &Node{Name: val})
+						node.Nodes = append(node.Nodes, &Node{Value: arrays[index]})
 					}
 					initiallyNode.Nodes = append(initiallyNode.Nodes, node)
-				}
-				u.Tree.Nodes = append(u.Tree.Nodes, initiallyNode)
-			} else {
-				for _, val := range strings.Split(pom, "[]") {
-					node := &Node{
-						Statement: "=",
-						Nodes:     []*Node{},
+				} else {
+					left := strings.TrimSpace(strings.Split(val, ":")[0])
+					right := strings.TrimSpace(strings.Split(val, ":")[1])
+					if len(strings.Split(left, ",")) != len(strings.Split(right, ",")) {
+						return "CHYBA - initially section", false
 					}
-					if !strings.Contains(val, "<<") && !strings.Contains(val, ">>") {
-						left := strings.TrimSpace(strings.Split(val, ":")[0])
-						right := strings.TrimSpace(strings.Split(val, ":")[1])
-						if _, isset := u.Variables[left]; isset {
-							if a, err := strconv.Atoi(right); err == nil && u.Variables[left] == "integer" {
-								u.Variables[left] = a
-								u.Body["initially"][left] = a
-								node.Nodes = append(node.Nodes, &Node{Name: left})
+					for index, _val := range strings.Split(left, ",") {
+						node := &Node{
+							Statement: "=",
+							Nodes:     []*Node{},
+						}
+						_val = strings.TrimSpace(_val)
+						_r := strings.TrimSpace(strings.Split(right, ",")[index])
+						if _, isset := u.Variables[_val]; isset {
+							if a, err := strconv.Atoi(_r); err == nil && u.Variables[_val] == "integer" {
+								u.Variables[_val] = a
+								u.Body["initially"][_val] = a
+								node.Nodes = append(node.Nodes, &Node{Name: _val})
 								node.Nodes = append(node.Nodes, &Node{Value: a})
 							}
 						} else {
-							return "CHYBA - initially section", false
+							return "CHYBA - initially section", true
 						}
-					} else {
-						i, k, N, oper1, oper2 := forParserLeft(val[1:len(val)-1], u.Variables)
-						arrays, vals := forParserRight(val[1:len(val)-1], u.Variables, i, k, N, oper1, oper2)
-						for index, val := range vals {
-							u.Variables[val] = arrays[index]
-							u.Body["initially"][val] = arrays[index]
-							node.Nodes = append(node.Nodes, &Node{Name: val})
-							node.Nodes = append(node.Nodes, &Node{Value: arrays[index]})
-						}
+						initiallyNode.Nodes = append(initiallyNode.Nodes, node)
 					}
-					initiallyNode.Nodes = append(initiallyNode.Nodes, node)
 				}
-				u.Tree.Nodes = append(u.Tree.Nodes, initiallyNode)
 			}
+			u.Tree.Nodes = append(u.Tree.Nodes, initiallyNode)
 		} else if u.Token == "assign" {
 			u.Body["assign"] = make(map[string]interface{})
 			u.Scan()
@@ -225,26 +197,23 @@ func (u *Unity) Parse() (string, bool) {
 				pom += u.Token + " "
 				u.Scan()
 			}
-			if strings.Contains(pom, "<<[]") {
-				pom = pom[strings.Index(pom, "<<[]")+4:strings.Index(pom, ">>")] + pom[strings.Index(pom, ">>")+2:]
-				for _, val := range strings.Split(pom, "[]") {
-					fmt.Println(val)
+			for index, val := range strings.Split(pom, " [] ") {
+				if strings.Contains(val, "<[]") || strings.Contains(val, "<||") {
+					val = strings.TrimSpace(val)
+					val = val[strings.Index(val, "<")+4 : len(val)-1]
+					left := strings.TrimSpace(strings.Split(val, "::")[0])
+					right := strings.TrimSpace(strings.Split(val, "::")[1])
+					u.Body["assign"]["for_"+strconv.Itoa(index)+" "+strings.TrimSpace(left)] = strings.TrimSpace(right)
+				} else {
+					val = strings.TrimSpace(val)
+					left := strings.TrimSpace(strings.Split(val, ":=")[0])
+					right := strings.TrimSpace(strings.Split(val, ":=")[1])
+					u.Body["assign"][left] = right
+
 				}
-			} else if strings.Contains(pom, "<<||") {
-				pom = pom[strings.Index(pom, "<<||")+4:strings.Index(pom, ">>")] + pom[strings.Index(pom, ">>")+2:]
-				for _, val := range strings.Split(pom, "[]") {
-					fmt.Println(val)
-					//TODO ked bude cas :D
-				}
-			} else {
-				for _, val := range strings.Split(pom, "[]") {
-					left := strings.Split(val, ":=")[0]
-					right := strings.Split(val, ":=")[1]
-					u.Body["assign"][strings.TrimSpace(left)] = right[1 : len(right)-1]
-				}
-				assignNode := makeAssignNode(u.Body["assign"], u.Tree)
-				u.Tree.Nodes = append(u.Tree.Nodes, assignNode)
 			}
+			assignNode := makeAssignNode(u.Body["assign"], u.Tree)
+			u.Tree.Nodes = append(u.Tree.Nodes, assignNode)
 		} else if u.Token == "end" {
 			return "Program bol sparsovaný správne", true
 		} else {
@@ -252,4 +221,148 @@ func (u *Unity) Parse() (string, bool) {
 		}
 	}
 	return "Telo programu je prázdne", false
+}
+
+func MakePromela(root *Node, u *Unity) {
+	var (
+		_declare   = true
+		_initially = false
+		_always    = false
+		_assign    = false
+	)
+	queue := make([]*Node, 0)
+	queue = append(queue, root.Nodes...)
+	assignIndex := 0
+	var pom, declarePom, initiallyPom string
+	for len(queue) != 0 {
+		current := queue[0]
+		queue = queue[1:]
+		if _declare {
+			if current.Section == "always" {
+				_declare = false
+				_always = true
+			} else if current.Section == "initially" {
+				_declare = false
+				_initially = true
+			} else if current.Section == "" {
+			}
+		} else if _always {
+			if current.Section == "initially" {
+				_always = false
+				_initially = true
+			} else {
+			}
+		} else if _initially {
+			if current.Section == "assign" {
+				_initially = false
+				_assign = true
+				pom += "int tmp;\n"
+				pom += declarePom
+				pom += "init {\n"
+				pom += initiallyPom
+				pom += "}\n"
+			} else {
+				if current.Statement == "=" && len(current.Nodes) == 2 {
+					switch x := current.Nodes[1].Value.(type) {
+					case int:
+						declarePom += fmt.Sprintf("int %s;\n", current.Nodes[0].Name)
+						initiallyPom += fmt.Sprintf("%s = %d;\n", current.Nodes[0].Name, x)
+					case []int:
+						declarePom += fmt.Sprintf("int %s[%d];\n", current.Nodes[0].Name, len(x))
+						for index, val := range x {
+							initiallyPom += fmt.Sprintf("%s[%d] = %d;\n", current.Nodes[0].Name, index, val)
+						}
+					}
+				}
+			}
+		} else if _assign {
+			if current.Statement == "for" && current.Section == "subAssign" {
+				i, _, N, oper1, oper2 := forParserLeft(current.Value.(string), u.Variables)
+				index := i
+				for {
+					exp1 := strconv.Itoa(i) + oper1 + strconv.Itoa(index)
+					exp2 := strconv.Itoa(index) + oper2 + strconv.Itoa(N)
+					expression1, err1 := govaluate.NewEvaluableExpression(exp1)
+					expression2, err2 := govaluate.NewEvaluableExpression(exp2)
+					if err1 == nil && err2 == nil {
+						result1, err1 := expression1.Evaluate(nil)
+						result2, err2 := expression2.Evaluate(nil)
+						if err1 == nil && err2 == nil {
+							if result1.(bool) && result2.(bool) {
+								pom += fmt.Sprint("active proctype process_", assignIndex, "() {\n")
+								pom += "do\n"
+								if current.Nodes[0].Statement == "=" && current.Nodes[0].Ref != nil {
+									l := getIndexArray(current.Nodes[0].Ref.Nodes[0].Value.(string), index)
+									r := getIndexArray(current.Nodes[0].Ref.Nodes[1].Value.(string), index)
+									pom += fmt.Sprintf(":: %s %s %s ->\n", l, current.Nodes[0].Ref.Statement, r)
+								} else {
+									pom += ":: "
+								}
+								pom += "atomic {\n"
+								if current.Nodes[0].Nodes[0].Statement == "arrExp" {
+									value := current.Nodes[0].Nodes[0].Value.(string)
+									l := strings.Split(value, "=")[0]
+									r := strings.Split(value, "=")[1]
+									lArray := make([]string, 0)
+									rArray := make([]string, 0)
+									for i, val := range strings.Split(l, ",") {
+										lArray = append(lArray, strings.TrimSpace(val))
+										rArray = append(rArray, strings.TrimSpace(strings.Split(r, ",")[i]))
+									}
+									if lArray[0] == rArray[1] {
+										pom += makeSwap(getIndexArray(lArray[0], index), getIndexArray(lArray[1], index))
+									}
+								}
+								pom += "}\n"
+								pom += ":: else -> skip\n"
+								pom += "od\n"
+								pom += "}\n"
+								assignIndex++
+								index++
+							} else {
+								break
+							}
+						}
+					}
+				}
+			} else if current.Statement == "=" && current.Section == "subAssign" {
+				pom += fmt.Sprint("active proctype process_", assignIndex, "() {\n")
+				pom += "do\n"
+				if current.Ref != nil {
+					pom += ":: "
+					if current.Ref.Nodes[0].Name != "" {
+						pom += fmt.Sprint(current.Ref.Nodes[0].Name, " ")
+					} else if current.Ref.Nodes[0].Value != nil {
+						pom += fmt.Sprint(current.Ref.Nodes[0].Value, " ")
+					}
+					pom += fmt.Sprint(current.Ref.Statement, " ")
+					if current.Ref.Nodes[1].Name != "" {
+						pom += fmt.Sprint(current.Ref.Nodes[1].Name, " ->\n")
+					} else if current.Ref.Nodes[1].Value != nil {
+						pom += fmt.Sprint(current.Ref.Nodes[1].Value, " ->\n")
+					}
+				}
+				pom += "atomic {\n"
+				pom += fmt.Sprintln(current.Nodes[0].Name, " = ", current.Nodes[1].Value)
+				pom += "}\n"
+				pom += ":: else -> skip\n"
+				pom += "od\n"
+				pom += "}\n"
+				assignIndex++
+			}
+		}
+		for i := range current.Nodes {
+			queue = append([]*Node{current.Nodes[len(current.Nodes)-1-i]}, queue...)
+		}
+	}
+	os.Mkdir("public/out", 0777)
+	if f, err := os.Create("public/out/program.pml"); err == nil {
+		if _, err := f.WriteString(pom); err == nil {
+			err = f.Close()
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+		}
+	}
 }
