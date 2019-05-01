@@ -1,9 +1,7 @@
 package actions
 
 import (
-	"bytes"
 	"encoding/json"
-	"os/exec"
 
 	"github.com/filip/unity_verificator/unityInterpreter"
 	"github.com/gobuffalo/buffalo"
@@ -51,16 +49,16 @@ func runCodeAPIHandler(c buffalo.Context) error {
 		data := Result{Text: text, Status: ok}
 		return c.Render(jsonResponse(data))
 	}
-	cmd := exec.Command("/bin/sh", "-c", "bin/s2n out/progam.pml -o out/program.smv ")
-	var stdout, stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	err := cmd.Run()
-	if err != nil {
-		c.Logger().Fatalf("cmd.Run() failed with %s\n", err)
-	}
-	outStr, errStr := string(stdout.Bytes()), string(stderr.Bytes())
-	c.Logger().Info("out:\n%s\nerr:\n%s\n", outStr, errStr)
+	// cmd := exec.Command("/bin/sh", "-c", "bin/s2n out/progam.pml -o out/program.smv ")
+	// var stdout, stderr bytes.Buffer
+	// cmd.Stdout = &stdout
+	// cmd.Stderr = &stderr
+	// err := cmd.Run()
+	// if err != nil {
+	// 	c.Logger().Fatalf("cmd.Run() failed with %s\n", err)
+	// }
+	// outStr, errStr := string(stdout.Bytes()), string(stderr.Bytes())
+	// c.Logger().Info("out:\n%s\nerr:\n%s\n", outStr, errStr)
 
 	// if err != nil {
 	// 	text = "Chyba pri vytváraní súboru smv!!!"
@@ -68,6 +66,8 @@ func runCodeAPIHandler(c buffalo.Context) error {
 	// } else {
 	// 	text += "\nPrajete si stiahnuť smv súbor?"
 	// }
+
+	text += "\nPrajete si stiahnuť pml súbor?"
 	data := Result{
 		Text:        text,
 		Variables:   unity.Variables,
