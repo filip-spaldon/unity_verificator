@@ -2,6 +2,7 @@ package unityInterpreter
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -368,18 +369,18 @@ func MakePromela(root *Node, u *Unity) {
 	// }
 	dir := filepath.Join(".", "public/out")
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		fmt.Println("error")
+		log.Println("!!!!!!!!!!!!!!!!!! error 1")
 		return
 	}
 	f, err := os.Create(filepath.Join(dir, "program.pml"))
 	if err != nil {
-		fmt.Println("error")
+		log.Println("!!!!!!!!!!!!!!!!!! error 2")
 		return
 	}
 	_, err = f.WriteString(pom)
 	if err != nil {
-		fmt.Println("error")
+		log.Println("!!!!!!!!!!!!!!!!!! error 3")
 		return
 	}
-	defer f.Close()
+	f.Close()
 }
