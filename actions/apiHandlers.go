@@ -44,7 +44,7 @@ func runCodeAPIHandler(c buffalo.Context) error {
 	unity.Next()
 	unity.Scan()
 	text, ok := unity.Parse()
-	unityInterpreter.MakePromela(&unity.Tree, &unity)
+	unityInterpreter.MakePromela(&unity.Tree, &unity, c)
 	if !ok {
 		data := Result{Text: text, Status: ok}
 		return c.Render(jsonResponse(data))

@@ -2,13 +2,13 @@ package unityInterpreter
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/asaskevich/govalidator"
+	"github.com/gobuffalo/buffalo"
 	"gopkg.in/Knetic/govaluate.v3"
 )
 
@@ -225,7 +225,7 @@ func (u *Unity) Parse() (string, bool) {
 	return "Telo programu je prázdne", false
 }
 
-func MakePromela(root *Node, u *Unity) {
+func MakePromela(root *Node, u *Unity, c buffalo.Context) {
 	var (
 		_declare   = true
 		_initially = false
@@ -367,20 +367,22 @@ func MakePromela(root *Node, u *Unity) {
 	// 		}
 	// 	}
 	// }
+	c.Logger().Info("zacinam")
 	dir := filepath.Join(".", "public/out")
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		log.Println("!!!!!!!!!!!!!!!!!! error 1")
+		c.Logger().Error("!!!!!!!!!!!!!!!!!! error 1")
 		return
 	}
 	f, err := os.Create(filepath.Join(dir, "program.pml"))
 	if err != nil {
-		log.Println("!!!!!!!!!!!!!!!!!! error 2")
+		c.Logger().Error("!!!!!!!!!!!!!!!!!! error 2")
 		return
 	}
 	_, err = f.WriteString(pom)
 	if err != nil {
-		log.Println("!!!!!!!!!!!!!!!!!! error 3")
+		c.Logger().Error("!!!!!!!!!!!!!!!!!! error 3")
 		return
 	}
 	f.Close()
+	c.Logger().Info("koncim")
 }
