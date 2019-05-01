@@ -3,6 +3,7 @@ package unityInterpreter
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -355,14 +356,30 @@ func MakePromela(root *Node, u *Unity) {
 			queue = append([]*Node{current.Nodes[len(current.Nodes)-1-i]}, queue...)
 		}
 	}
-	os.Mkdir("public/out", 0777)
-	if f, err := os.Create("public/out/program.pml"); err == nil {
-		if _, err := f.WriteString(pom); err == nil {
-			err = f.Close()
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-		}
+	// os.Mkdir("public/out", 0777)
+	// if f, err := os.Create("public/out/program.pml"); err == nil {
+	// 	if _, err := f.WriteString(pom); err == nil {
+	// 		err = f.Close()
+	// 		if err != nil {
+	// 			fmt.Println(err)
+	// 			return
+	// 		}
+	// 	}
+	// }
+	dir := filepath.Join(".", "public/out")
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		fmt.Println("error")
+		return
 	}
+	f, err := os.Create(filepath.Join(dir, "program.pml"))
+	if err != nil {
+		fmt.Println("error")
+		return
+	}
+	_, err = f.WriteString(pom)
+	if err != nil {
+		fmt.Println("error")
+		return
+	}
+	defer f.Close()
 }
