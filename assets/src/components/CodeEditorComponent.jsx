@@ -45,7 +45,7 @@ end`;
         console.log(data);
         if (data.status) {
           if (window.confirm(data.result)) {
-            var file_path = "/out/program.smv";
+            var file_path = "/out/program.pml";
             var a = document.createElement("a");
             a.href = file_path;
             a.download = file_path.substr(file_path.lastIndexOf("/") + 1);

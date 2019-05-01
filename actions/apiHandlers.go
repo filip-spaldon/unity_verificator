@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"bytes"
 	"encoding/json"
 	"os/exec"
 
@@ -51,13 +52,22 @@ func runCodeAPIHandler(c buffalo.Context) error {
 		return c.Render(jsonResponse(data))
 	}
 	cmd := exec.Command("/bin/sh", "-c", "bin/s2n out/progam.pml -o out/program.smv ")
-	_, err := cmd.CombinedOutput()
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
 	if err != nil {
-		text = "Chyba pri vytváraní súboru smv!!!"
-		ok = false
-	} else {
-		text += "\nPrajete si stiahnuť smv súbor?"
+		c.Logger().Fatalf("cmd.Run() failed with %s\n", err)
 	}
+	outStr, errStr := string(stdout.Bytes()), string(stderr.Bytes())
+	c.Logger().Info("out:\n%s\nerr:\n%s\n", outStr, errStr)
+
+	// if err != nil {
+	// 	text = "Chyba pri vytváraní súboru smv!!!"
+	// 	ok = false
+	// } else {
+	// 	text += "\nPrajete si stiahnuť smv súbor?"
+	// }
 	data := Result{
 		Text:        text,
 		Variables:   unity.Variables,
