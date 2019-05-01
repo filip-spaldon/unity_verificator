@@ -2,6 +2,7 @@ package actions
 
 import (
 	"encoding/json"
+	"os/exec"
 
 	"github.com/filip/unity_verificator/unityInterpreter"
 	"github.com/gobuffalo/buffalo"
@@ -49,9 +50,14 @@ func runCodeAPIHandler(c buffalo.Context) error {
 		data := Result{Text: text, Status: ok}
 		return c.Render(jsonResponse(data))
 	}
-	// cmd := exec.Command("/bin/sh", "-c", "bin/s2n public/out/progam.pml -o public/out/program.smv ")
-	// _, err := cmd.CombinedOutput()
-	text += "\nPrajete si stiahnuť pml súbor?"
+	cmd := exec.Command("/bin/sh", "-c", "bin/s2n out/progam.pml -o out/program.smv ")
+	_, err := cmd.CombinedOutput()
+	if err != nil {
+		text = "Chyba pri vytváraní súboru smv!!!"
+		ok = false
+	} else {
+		text += "\nPrajete si stiahnuť smv súbor?"
+	}
 	data := Result{
 		Text:        text,
 		Variables:   unity.Variables,

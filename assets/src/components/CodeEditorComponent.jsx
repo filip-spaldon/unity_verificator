@@ -45,7 +45,13 @@ end`;
         console.log(data);
         if (data.status) {
           if (window.confirm(data.result)) {
-            window.location.href = "/out/program.pml";
+            var file_path = "/out/program.smv";
+            var a = document.createElement("a");
+            a.href = file_path;
+            a.download = file_path.substr(file_path.lastIndexOf("/") + 1);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
           }
         } else {
           alert(data.result);

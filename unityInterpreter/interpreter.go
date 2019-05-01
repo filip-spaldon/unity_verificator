@@ -357,39 +357,17 @@ func MakePromela(root *Node, u *Unity, c buffalo.Context) {
 			queue = append([]*Node{current.Nodes[len(current.Nodes)-1-i]}, queue...)
 		}
 	}
-	// os.Mkdir("public/out", 0777)
-	// if f, err := os.Create("public/out/program.pml"); err == nil {
-	// 	if _, err := f.WriteString(pom); err == nil {
-	// 		err = f.Close()
-	// 		if err != nil {
-	// 			fmt.Println(err)
-	// 			return
-	// 		}
-	// 	}
-	// }
-	c.Logger().Info("zacinam")
-	dir := filepath.Join(".", "public/out")
+	dir := filepath.Join(".", "out")
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		c.Logger().Error("!!!!!!!!!!!!!!!!!! error 1")
 		return
 	}
 	f, err := os.Create(filepath.Join(dir, "program.pml"))
 	if err != nil {
-		c.Logger().Error("!!!!!!!!!!!!!!!!!! error 2")
 		return
 	}
 	_, err = f.WriteString(pom)
 	if err != nil {
-		c.Logger().Error("!!!!!!!!!!!!!!!!!! error 3")
 		return
 	}
 	f.Close()
-	thepath, err := filepath.Abs(filepath.Dir(filepath.Join(dir, "program.pml")))
-
-	if err != nil {
-		panic(err)
-	}
-
-	c.Logger().Info("The file path : ", thepath)
-	c.Logger().Info("koncim")
 }
