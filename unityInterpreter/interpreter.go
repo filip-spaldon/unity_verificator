@@ -384,5 +384,12 @@ func MakePromela(root *Node, u *Unity, c buffalo.Context) {
 		return
 	}
 	f.Close()
+	thepath, err := filepath.Abs(filepath.Dir(filepath.Join(dir, "program.pml")))
+
+	if err != nil {
+		panic(err)
+	}
+
+	c.Logger().Info("The file path : ", thepath)
 	c.Logger().Info("koncim")
 }
