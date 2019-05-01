@@ -357,17 +357,22 @@ func MakePromela(root *Node, u *Unity, c buffalo.Context) {
 			queue = append([]*Node{current.Nodes[len(current.Nodes)-1-i]}, queue...)
 		}
 	}
+	c.Logger().Info("CREATING PML FILE")
 	dir := filepath.Join(".", "out")
 	if err := os.MkdirAll(dir, 0755); err != nil {
+		c.Logger().Error(err)
 		return
 	}
 	f, err := os.Create(filepath.Join(dir, "program.pml"))
 	if err != nil {
+		c.Logger().Error(err)
 		return
 	}
 	_, err = f.WriteString(pom)
 	if err != nil {
+		c.Logger().Error(err)
 		return
 	}
 	f.Close()
+	c.Logger().Info("OK")
 }
