@@ -43,8 +43,12 @@ end`;
       .then(data => {
         data = JSON.parse(data);
         console.log(data);
-        if (window.confirm(data.output)) {
-          window.location.href = "/out/program.smv";
+        if (data.status) {
+          if (window.confirm(data.result)) {
+            window.location.href = "/out/program.pml";
+          }
+        } else {
+          alert(data.result);
         }
         return true;
       });

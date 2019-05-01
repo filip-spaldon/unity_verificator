@@ -2,7 +2,6 @@ package actions
 
 import (
 	"encoding/json"
-	"os/exec"
 
 	"github.com/filip/unity_verificator/unityInterpreter"
 	"github.com/gobuffalo/buffalo"
@@ -27,7 +26,7 @@ type Result struct {
 	Body        map[string]map[string]interface{} `json:"body"`
 	ProgramName string                            `json:"Program name"`
 	Tree        Tree                              `json:"tree"`
-	Output      string                            `json:"output"`
+	Status      bool                              `json:"status"`
 }
 
 func jsonResponse(obj Result) (int, render.Renderer) {
@@ -47,15 +46,12 @@ func runCodeAPIHandler(c buffalo.Context) error {
 	text, ok := unity.Parse()
 	unityInterpreter.MakePromela(&unity.Tree, &unity)
 	if !ok {
-		data := Result{Text: text}
+		data := Result{Text: text, Status: ok}
 		return c.Render(jsonResponse(data))
 	}
-	cmd := exec.Command("/bin/sh", "-c", "bin/s2n public/out/program.pml -o public/out/program.smv ")
-	output := "ERROR"
-	if _, err := cmd.CombinedOutput(); err == nil {
-		output = "Program bol úspešne vygenerovaný!!!\n"
-		output += "Prajete si stiahnuť sml súbor?"
-	}
+	// cmd := exec.Command("/bin/sh", "-c", "bin/s2n public/out/progam.pml -o public/out/program.smv ")
+	// _, err := cmd.CombinedOutput()
+	text += "\nPrajete si stiahnuť pml súbor?"
 	data := Result{
 		Text:        text,
 		Variables:   unity.Variables,
@@ -70,7 +66,7 @@ func runCodeAPIHandler(c buffalo.Context) error {
 			Section:   unity.Tree.Section,
 			Value:     unity.Tree.Value,
 		},
-		Output: output,
+		Status: ok,
 	}
 	return c.Render(jsonResponse(data))
 }
