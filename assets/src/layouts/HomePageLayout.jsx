@@ -6,8 +6,8 @@ export default function MainPageLayout() {
       <div className="title">
         <h4>
           <p>Názov diplomovej práce:</p>
-          <span>Verifikačný nástroj pre UNITY</span>
-          <span className="small">Verification tool for UNITY</span>
+          <span>Verifikačný nástroj pre formalizmus UNITY</span>
+          <span className="small">Verification tool for UNITY formalism</span>
           <hr />
           <p>Vedúci práce: </p>
           <span className="small">doc. RNDr. Damas Gruska, PhD.</span>
@@ -17,8 +17,10 @@ export default function MainPageLayout() {
         </h4>
       </div>
       <p className="goal">
-        Cieľom práce je vytvoriť verifikačný nástroj podporujúci zápis,
-        simuláciu a verifikáciu programov zapísaných v jazyku UNITY.
+        Cieľom práce je vytvoriť verifikačný nástroj podporujúci zápis a
+        verifikáciu programov zapísaných v jazyku UNITY. Nástroj bude využívať
+        transformáciu UNITY programov do vlákien pre každé z priradení a takto
+        vzniknutý program sa bude verifikovať nástrojom NuSMV.
       </p>
     </div>
   );

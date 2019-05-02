@@ -1,5 +1,5 @@
-import React from 'react';
-import { Timeline, TimelineEvent } from 'react-event-timeline';
+import React from "react";
+import { Timeline, TimelineEvent } from "react-event-timeline";
 
 export default function ProgressPageLayout() {
   return (
