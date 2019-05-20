@@ -1,0 +1,238 @@
+MODULE main
+  VAR
+    tmp : signed word[32];
+    N : signed word[32];
+    a : array 0..4 of signed word[32];
+    p_initial : process initial(self);
+    p_process_0 : process process_0(self);
+    p_process_1 : process process_1(self);
+    p_process_2 : process process_2(self);
+    p_process_3 : process process_3(self);
+  ASSIGN
+    init(tmp) := swconst(0, 32);
+    init(N) := swconst(0, 32);
+    init(a[0]) := swconst(0, 32);
+    init(a[1]) := swconst(0, 32);
+    init(a[2]) := swconst(0, 32);
+    init(a[3]) := swconst(0, 32);
+    init(a[4]) := swconst(0, 32);
+  TRANS
+    !running
+
+MODULE initial(sup)
+  VAR
+    pc : 1..7;
+  ASSIGN
+    init(pc) := 1;
+    next(sup.N) := 
+            case
+               pc = 1 : swconst(5,32);
+               TRUE   : sup.N;
+            esac;
+    next(sup.a[0]) := 
+            case
+               pc = 2 : swconst(64,32);
+               TRUE   : sup.a[0];
+            esac;
+    next(sup.a[1]) := 
+            case
+               pc = 3 : swconst(80,32);
+               TRUE   : sup.a[1];
+            esac;
+    next(sup.a[2]) := 
+            case
+               pc = 4 : swconst(47,32);
+               TRUE   : sup.a[2];
+            esac;
+    next(sup.a[3]) := 
+            case
+               pc = 5 : swconst(80,32);
+               TRUE   : sup.a[3];
+            esac;
+    next(sup.a[4]) := 
+            case
+               pc = 6 : swconst(41,32);
+               TRUE   : sup.a[4];
+            esac;
+  TRANS
+      ( running & (
+               pc = 1 & next(pc) = 2
+             | pc = 2 & next(pc) = 3
+             | pc = 3 & next(pc) = 4
+             | pc = 4 & next(pc) = 5
+             | pc = 5 & next(pc) = 6
+             | pc = 6 & next(pc) = 7
+             )
+      | !running & next(pc) = pc )
+    & ( pc = 7
+       -> !running )
+
+
+MODULE process_0(sup)
+  VAR
+    pc : 1..8;
+  ASSIGN
+    init(pc) := 1;
+    next(sup.tmp) := 
+            case
+               pc = 3 : sup.a[0];
+               TRUE   : sup.tmp;
+            esac;
+    next(sup.a[0]) := 
+            case
+               pc = 4 : sup.a[1];
+               TRUE   : sup.a[0];
+            esac;
+    next(sup.a[1]) := 
+            case
+               pc = 5 : sup.tmp;
+               TRUE   : sup.a[1];
+            esac;
+  TRANS
+      ( running & (
+               pc = 1 & sup.a[0] > sup.a[1] & next(pc) = 2
+             | pc = 1 & sup.a[0] <= sup.a[1] & next(pc) = 6
+             | pc = 2 & next(pc) = 3
+             | pc = 3 & next(pc) = 4
+             | pc = 4 & next(pc) = 5
+             | pc = 5 & next(pc) = 1
+             | pc = 6 & next(pc) = 7
+             | pc = 7 & TRUE & next(pc) = 1
+             )
+      | !running & next(pc) = pc )
+    & ( pc = 2
+      | pc = 4
+      | pc = 5
+      | pc = 6
+       -> running )
+    & ( pc = 7 & !TRUE
+      | pc = 8
+       -> !running )
+
+
+MODULE process_1(sup)
+  VAR
+    pc : 1..8;
+  ASSIGN
+    init(pc) := 1;
+    next(sup.tmp) := 
+            case
+               pc = 3 : sup.a[1];
+               TRUE   : sup.tmp;
+            esac;
+    next(sup.a[1]) := 
+            case
+               pc = 4 : sup.a[2];
+               TRUE   : sup.a[1];
+            esac;
+    next(sup.a[2]) := 
+            case
+               pc = 5 : sup.tmp;
+               TRUE   : sup.a[2];
+            esac;
+  TRANS
+      ( running & (
+               pc = 1 & sup.a[1] > sup.a[2] & next(pc) = 2
+             | pc = 1 & sup.a[1] <= sup.a[2] & next(pc) = 6
+             | pc = 2 & next(pc) = 3
+             | pc = 3 & next(pc) = 4
+             | pc = 4 & next(pc) = 5
+             | pc = 5 & next(pc) = 1
+             | pc = 6 & next(pc) = 7
+             | pc = 7 & TRUE & next(pc) = 1
+             )
+      | !running & next(pc) = pc )
+    & ( pc = 2
+      | pc = 4
+      | pc = 5
+      | pc = 6
+       -> running )
+    & ( pc = 7 & !TRUE
+      | pc = 8
+       -> !running )
+
+
+MODULE process_2(sup)
+  VAR
+    pc : 1..8;
+  ASSIGN
+    init(pc) := 1;
+    next(sup.tmp) := 
+            case
+               pc = 3 : sup.a[2];
+               TRUE   : sup.tmp;
+            esac;
+    next(sup.a[2]) := 
+            case
+               pc = 4 : sup.a[3];
+               TRUE   : sup.a[2];
+            esac;
+    next(sup.a[3]) := 
+            case
+               pc = 5 : sup.tmp;
+               TRUE   : sup.a[3];
+            esac;
+  TRANS
+      ( running & (
+               pc = 1 & sup.a[2] > sup.a[3] & next(pc) = 2
+             | pc = 1 & sup.a[2] <= sup.a[3] & next(pc) = 6
+             | pc = 2 & next(pc) = 3
+             | pc = 3 & next(pc) = 4
+             | pc = 4 & next(pc) = 5
+             | pc = 5 & next(pc) = 1
+             | pc = 6 & next(pc) = 7
+             | pc = 7 & TRUE & next(pc) = 1
+             )
+      | !running & next(pc) = pc )
+    & ( pc = 2
+      | pc = 4
+      | pc = 5
+      | pc = 6
+       -> running )
+    & ( pc = 7 & !TRUE
+      | pc = 8
+       -> !running )
+
+
+MODULE process_3(sup)
+  VAR
+    pc : 1..8;
+  ASSIGN
+    init(pc) := 1;
+    next(sup.tmp) := 
+            case
+               pc = 3 : sup.a[3];
+               TRUE   : sup.tmp;
+            esac;
+    next(sup.a[3]) := 
+            case
+               pc = 4 : sup.a[4];
+               TRUE   : sup.a[3];
+            esac;
+    next(sup.a[4]) := 
+            case
+               pc = 5 : sup.tmp;
+               TRUE   : sup.a[4];
+            esac;
+  TRANS
+      ( running & (
+               pc = 1 & sup.a[3] > sup.a[4] & next(pc) = 2
+             | pc = 1 & sup.a[3] <= sup.a[4] & next(pc) = 6
+             | pc = 2 & next(pc) = 3
+             | pc = 3 & next(pc) = 4
+             | pc = 4 & next(pc) = 5
+             | pc = 5 & next(pc) = 1
+             | pc = 6 & next(pc) = 7
+             | pc = 7 & TRUE & next(pc) = 1
+             )
+      | !running & next(pc) = pc )
+    & ( pc = 2
+      | pc = 4
+      | pc = 5
+      | pc = 6
+       -> running )
+    & ( pc = 7 & !TRUE
+      | pc = 8
+       -> !running )
+
+
